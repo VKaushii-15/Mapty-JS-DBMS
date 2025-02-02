@@ -77,15 +77,13 @@ class App {
     this.#CurrLat = position.coords.latitude;
     this.#Currlong = position.coords.longitude;
     console.log(this.#CurrLat, this.#Currlong);
-    this.#map = L.map("map").setView([this.#CurrLat, this.#Currlong], 13);
+    this.#map = L.map("map").setView([this.#CurrLat, this.#Currlong], 15);
     //prettier-ignore
     L.marker([this.#CurrLat, this.#Currlong])
       .addTo(this.#map)
       .bindPopup("Your Home")
       .openPopup();
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      this.#map
-    );
+    L.tileLayer("https://tile.osm.org/{z}/{x}/{y}.png").addTo(this.#map);
     this.#map.on("click", this.showForm.bind(this));
   }
   showForm(mapE) {
@@ -132,38 +130,41 @@ class App {
     form.classList.remove("hidden");
   }
   renderWorkoutMarker(Workout) {
-    try {
-      if (!this.#map || !Workout?.coords) return;
-
-      const routingControl = new L.Routing.Control({
-        waypoints: [
-          (this.#CurrLat, this.#Currlong),
-          (Workout.coords[0], Workout.coords[1]),
+    const control = new L.Routing.Control({
+      waypoints: [
+        L.latLng(this.#CurrLat, this.#Currlong),
+        L.latLng(Workout.coords[0], Workout.coords[1]),
+      ],
+      routeWhileDragging: true,
+      show: false,
+      addWaypoints: false,
+      lineOptions: {
+        styles: [
+          {
+            color: Workout.type === "running" ? "green" : "orange",
+            opacity: 1,
+            weight: 4,
+          },
         ],
-        routeWhileDragging: true,
-        lineOptions: {
-          styles: [{ color: "blue", opacity: 0.6, weight: 4 }],
-        },
-      });
-
-      routingControl.addTo(this.#map);
-
-      L.marker(Workout.coords)
-        .addTo(this.#map)
-        .bindPopup(
-          L.popup({
-            maxWidth: 250,
-            minWidth: 100,
-            autoClose: false,
-            closeOnClick: false,
-            className: `${Workout.type}-popup`,
-          })
-        )
-        .setPopupContent("Workout")
-        .openPopup();
-    } catch (error) {
-      console.error("Error in renderWorkoutMarker:", error);
-    }
+      },
+    });
+    control.addTo(this.#map);
+    L.marker(Workout.coords)
+      .addTo(this.#map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: `${Workout.type}-popup`,
+        })
+      )
+      .setPopupContent("Workout")
+      .openPopup();
+  }
+  catch(error) {
+    console.error("Error in renderWorkoutMarker:", error);
   }
 }
 
