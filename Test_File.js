@@ -24,6 +24,7 @@ class Workout {
 }
 
 class Running extends Workout {
+  type = "running";
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
     this.cadence = cadence;
@@ -35,6 +36,7 @@ class Running extends Workout {
   }
 }
 class Cycling extends Workout {
+  type = "cycling";
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
     this.elevationGain = elevationGain;
@@ -50,6 +52,8 @@ class App {
   #map;
   #mapEvent;
   #workout = [];
+  #CurrLat;
+  #Currlong;
   constructor() {
     this.getPosition();
     form.addEventListener("submit", this.newWorkout.bind(this));
@@ -70,13 +74,14 @@ class App {
       );
   }
   loadmap(position) {
-    const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
-    console.log(lat, lng);
-    this.#map = L.map("map").setView([lat, lng], 13);
-    L.marker([lat, lng])
+    this.#CurrLat = position.coords.latitude;
+    this.#Currlong = position.coords.longitude;
+    console.log(this.#CurrLat, this.#Currlong);
+    this.#map = L.map("map").setView([this.#CurrLat, this.#Currlong], 13);
+    //prettier-ignore
+    L.marker([this.#CurrLat, this.#Currlong])
       .addTo(this.#map)
-      .bindPopup("A pretty CSS popup.<br>Easily customizable.")
+      .bindPopup("Your Home")
       .openPopup();
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
       this.#map
@@ -93,6 +98,7 @@ class App {
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
+    let workout;
     if (type === "running") {
       const cadence = +inputCadence.value;
       if (
@@ -101,7 +107,7 @@ class App {
         !Number.isFinite(duration)
       )
         return alert("Inputs must be Positive Numbers!");
-      const workout = new Running([lat, lng], distance, duration, cadence);
+      workout = new Running([lat, lng], distance, duration, cadence);
       this.#workout.push(workout);
       console.log(workout);
     }
@@ -113,24 +119,51 @@ class App {
         !Number.isFinite(duration)
       )
         return alert("Inputs must be Positive Numbers!");
-      const workout = new Cycling([lat, lng], distance, duration, elevation);
+      workout = new Cycling([lat, lng], distance, duration, elevation);
       this.#workout.push(workout);
       console.log(workout);
     }
+    this.renderWorkoutMarker(workout);
+    inputDistance.value =
+      inputDuration.value =
+      inputCadence.value =
+      inputElevation.value =
+        "";
     form.classList.remove("hidden");
-    L.marker([lat, lng])
-      .addTo(this.#map)
-      .bindPopup(
-        L.popup({
-          maxWidth: 250,
-          minWidth: 100,
-          autoClose: false,
-          closeOnClick: false,
-          className: "running-popup",
-        })
-      )
-      .setPopupContent("Workout")
-      .openPopup();
+  }
+  renderWorkoutMarker(Workout) {
+    try {
+      if (!this.#map || !Workout?.coords) return;
+
+      const routingControl = new L.Routing.Control({
+        waypoints: [
+          (this.#CurrLat, this.#Currlong),
+          (Workout.coords[0], Workout.coords[1]),
+        ],
+        routeWhileDragging: true,
+        lineOptions: {
+          styles: [{ color: "blue", opacity: 0.6, weight: 4 }],
+        },
+      });
+
+      routingControl.addTo(this.#map);
+
+      L.marker(Workout.coords)
+        .addTo(this.#map)
+        .bindPopup(
+          L.popup({
+            maxWidth: 250,
+            minWidth: 100,
+            autoClose: false,
+            closeOnClick: false,
+            className: `${Workout.type}-popup`,
+          })
+        )
+        .setPopupContent("Workout")
+        .openPopup();
+    } catch (error) {
+      console.error("Error in renderWorkoutMarker:", error);
+    }
   }
 }
 
