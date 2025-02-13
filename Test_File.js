@@ -47,6 +47,10 @@ class Cycling extends Workout {
     return this.speed;
   }
 }
+class Swimming extends Workout {
+  type = "swimming";
+  constructor(coords, distance, duration, laps) {}
+}
 
 class App {
   #map;
@@ -122,11 +126,6 @@ class App {
       console.log(workout);
     }
     this.renderWorkoutMarker(workout);
-    inputDistance.value =
-      inputDuration.value =
-      inputCadence.value =
-      inputElevation.value =
-        "";
     form.classList.remove("hidden");
   }
   renderWorkoutMarker(Workout) {
