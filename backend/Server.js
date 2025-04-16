@@ -32,17 +32,25 @@ db.connect((err) => {
   }
 });
 
-app.get("/user/all", (req, res) => {
-  db.query("SELECT * FROM login", (err, result) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.send(result);
+app.get("/user/login", (req, res) => {
+  username = req.body.username;
+  password = req.body.password;
+  console.log("Username: ", username);
+  console.log("Password: ", password);
+  db.query(
+    `SELECT * FROM login WHERE username = ${username} AND password = ${password} `,
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("User found in the database", result);
+        res.send("UserFound");
+      }
     }
-  });
+  );
 });
 
-app.post("/user/login", (req, res) => {
+app.post("/user/register", (req, res) => {
   const { username, password } = req.body;
   db.query(
     "INSERT INTO login (username, password) values (?,?)",

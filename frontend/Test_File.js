@@ -1,6 +1,9 @@
-"use strict";
 // prettier-ignore
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+const loginButton = document.querySelector(".login-button");
 
 const form = document.querySelector(".form");
 const containerWorkouts = document.querySelector(".workouts");
@@ -13,7 +16,7 @@ const close_button = document.querySelector(".close_button");
 
 let map, mapEvent;
 
-// import { get } from "axios";
+import axios from "axios";
 
 class Workout {
   date = new Date();
@@ -29,10 +32,10 @@ class Workout {
     //prettier-ignore
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`;
   }
-  calcCalories(){
+  calcCalories() {
     if (this.type === "running") this.calories = this.distance * 0.75 * 60;
     if (this.type === "cycling") this.calories = this.distance * 0.5 * 60;
-    if( this.type === "swimming") this.calories = this.distance * 0.8 * 60;
+    if (this.type === "swimming") this.calories = this.distance * 0.8 * 60;
     if (this.type === "homeworkout") this.calories = this.distance * 0.5 * 60;
     return this.calories;
   }
@@ -40,7 +43,14 @@ class Workout {
 
 class Running extends Workout {
   type = "running";
-  constructor(coords, distance, calories, duration, completed = "NO", username = "user") {
+  constructor(
+    coords,
+    distance,
+    calories,
+    duration,
+    completed = "NO",
+    username = "user"
+  ) {
     super(coords);
     this.distance = distance;
     this.calories = calories;
@@ -53,11 +63,18 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = "cycling";
-  constructor(coords, distance, calories, duration, completed = "NO", username = "user") {
+  constructor(
+    coords,
+    distance,
+    calories,
+    duration,
+    completed = "NO",
+    username = "user"
+  ) {
     super(coords);
     this.distance = distance;
     this.calories = calories;
-    this.duration =duration;
+    this.duration = duration;
     this.completed = completed;
     this.username = username;
     this.setdescription();
@@ -66,7 +83,14 @@ class Cycling extends Workout {
 
 class Swimming extends Workout {
   type = "swimming";
-  constructor(distance, calories, laps, duration, completed = "NO", username = "user") {
+  constructor(
+    distance,
+    calories,
+    laps,
+    duration,
+    completed = "NO",
+    username = "user"
+  ) {
     super();
     this.distance = distance;
     this.calories = calories;
@@ -80,7 +104,13 @@ class Swimming extends Workout {
 
 class HomeWorkout extends Workout {
   type = "homeworkout";
-  constructor(workoutType, sets, duration, completed = "NO", username = "user") {
+  constructor(
+    workoutType,
+    sets,
+    duration,
+    completed = "NO",
+    username = "user"
+  ) {
     super(coords);
     this.types = workoutType; // Like "Push-ups" or "Squats"
     this.sets = sets;
@@ -106,15 +136,20 @@ class App {
       const workoutType = inputType.value;
       // Toggle visibility based on the selected type
       if (workoutType === "swimming") {
-        inputElevation.closest(".form__row").classList.remove("form__row--hidden");
+        inputElevation
+          .closest(".form__row")
+          .classList.remove("form__row--hidden");
         inputCadence.closest(".form__row").classList.add("form__row--hidden");
       } else {
         inputElevation.closest(".form__row").classList.add("form__row--hidden");
-        inputCadence.closest(".form__row").classList.remove("form__row--hidden");
+        inputCadence
+          .closest(".form__row")
+          .classList.remove("form__row--hidden");
       }
     });
     containerWorkouts.addEventListener("click", this.moveToPopup.bind(this));
     this.getlocalStorage();
+    loginButton.addEventListener("", this.insertIntoLogin.bind(this));
   }
   getPosition() {
     if (navigator.geolocation)
@@ -125,6 +160,26 @@ class App {
         }
       );
   }
+
+  //Insert Login
+
+  async insertIntoLogin() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    const data = await axios.get("http://localhost:3000/user/login", {
+      username: username,
+      password: password,
+    });
+    console.log(data.data);
+    if (data.data === "UserFound") {
+      alert("User Found");
+      window.location.href = "index.html";
+    } else {
+      alert("User Not Found");
+    }
+  }
+
   loadmap(position) {
     this.#CurrLat = position.coords.latitude;
     this.#Currlong = position.coords.longitude;
@@ -149,23 +204,20 @@ class App {
     form.classList.remove("hidden");
   }
   hideForm() {
-    inputDistance.value =
-      inputDuration.value =
-      inputElevation.value =
-        "";
+    inputDistance.value = inputDuration.value = inputElevation.value = "";
     form.style.display = "none";
     form.classList.add("hidden");
     setTimeout(() => (form.style.display = "grid"), 1000);
   }
   newWorkout(e) {
     e.preventDefault();
-  
+
     const type = inputType.value;
     const distance = +inputDistance.value;
     const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
-  
+
     if (type === "running") {
       if (!Number.isFinite(distance) || !Number.isFinite(duration))
         return alert("Inputs must be Positive Numbers!");
@@ -173,25 +225,33 @@ class App {
       this.renderWorkoutMarker(workout);
       this.renderWorkout(workout);
     }
-  
+
     if (type === "cycling") {
       const elevation = +inputElevation.value;
-      if (!Number.isFinite(distance) || !Number.isFinite(duration) || !Number.isFinite(elevation))
+      if (
+        !Number.isFinite(distance) ||
+        !Number.isFinite(duration) ||
+        !Number.isFinite(elevation)
+      )
         return alert("Inputs must be Positive Numbers!");
       workout = new Cycling([lat, lng], distance, 0, duration, "NO", "user");
       workout.speed = distance / (duration / 60); // Calculate speed (km/h)
       this.renderWorkoutMarker(workout);
       this.renderWorkout(workout);
     }
-  
+
     if (type === "swimming") {
       const laps = +inputElevation.value; // Assuming laps are entered in the elevation field
-      if (!Number.isFinite(distance) || !Number.isFinite(duration) || !Number.isFinite(laps))
+      if (
+        !Number.isFinite(distance) ||
+        !Number.isFinite(duration) ||
+        !Number.isFinite(laps)
+      )
         return alert("Inputs must be Positive Numbers!");
       workout = new Swimming(distance, 0, laps, duration, "NO", "user");
       this.renderWorkout(workout);
     }
-  
+
     if (type === "homeworkout") {
       const workoutType = inputCadence.value; // Assuming workout type is entered in cadence field
       const sets = +inputElevation.value; // Assuming sets are entered in elevation field
