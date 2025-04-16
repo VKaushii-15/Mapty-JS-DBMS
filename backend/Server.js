@@ -57,8 +57,7 @@ app.post("/user/login", (req, res) => {
 });
 
 app.post("/user/register", (req, res) => {
-  let username = req.body.username;
-  let password = req.body.password;
+  const { height, weight, age, gender, bmi, username, password } = req.body;
   db.query(
     "INSERT INTO login (username, password) values (?,?)",
     [username, password],
@@ -67,11 +66,9 @@ app.post("/user/register", (req, res) => {
         console.log(err);
       } else {
         console.log("Values inserted into login table");
-        res.send("Values Inserted Into Login Table");
       }
     }
   );
-  const { height, weight, age, gender, bmi } = req.body;
   console.log(
     `INSERT INTO profile (height , weight , age , gender , bmi , username) values (${height},${weight},${age},${gender},${bmi},${username})`
   );
@@ -83,7 +80,7 @@ app.post("/user/register", (req, res) => {
         console.log(err);
       } else {
         console.log("Values inserted into profile table");
-        res.send("Values Inserted into Profile Table");
+        res.send("Values Inserted into Login & Profile Table");
       }
     }
   );

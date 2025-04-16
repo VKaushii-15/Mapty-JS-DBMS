@@ -1,4 +1,5 @@
-import { pass, user } from "./Login.js";
+const username = sessionStorage.getItem("username");
+const password = sessionStorage.getItem("password");
 
 async function ProfileInsert() {
   const profileData = {
@@ -7,18 +8,18 @@ async function ProfileInsert() {
     age: document.getElementById("age").value,
     gender: document.getElementById("gender").value,
     bmi: document.getElementById("bmi").value,
-    username: user,
-    password: pass,
+    username: username,
+    password: password,
   };
-
   console.log(profileData);
   const response = await axios.post(
     "http://localhost:3000/user/register",
     profileData
   );
   console.log(response.data);
-  if (response.data === "Values Inserted") {
-    alert("Profile saved successfully!");
+  if (response.data === "Values Inserted into Login & Profile Table") {
+    alert("Profile saved successfully!...Enter your login credentials");
+    window.location.href = "./login.html";
   } else {
     alert("Error saving profile. Please try again.");
   }
@@ -27,6 +28,5 @@ async function ProfileInsert() {
 document.getElementById("profileForm").addEventListener("submit", function (e) {
   e.preventDefault();
   ProfileInsert();
-  console.log("Submitted profile:", profileData);
   alert("✅ Profile saved successfully!");
 });

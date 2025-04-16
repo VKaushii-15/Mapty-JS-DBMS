@@ -1,9 +1,7 @@
 // prettier-ignore
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const username = document.getElementById("username");
-const password = document.getElementById("password");
-const loginButton = document.querySelector(".login-button");
+const username = sessionStorage.getItem("username");
 
 const form = document.querySelector(".form");
 const containerWorkouts = document.querySelector(".workouts");
@@ -13,8 +11,6 @@ const inputDuration = document.querySelector(".form__input--duration");
 const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
 const close_button = document.querySelector(".close_button");
-
-import { user } from "./Login.js";
 
 let map, mapEvent;
 
