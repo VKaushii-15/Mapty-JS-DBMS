@@ -14,9 +14,9 @@ const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
 const close_button = document.querySelector(".close_button");
 
-let map, mapEvent;
+import { user } from "./Login.js";
 
-import axios from "axios";
+let map, mapEvent;
 
 class Workout {
   date = new Date();
@@ -149,7 +149,6 @@ class App {
     });
     containerWorkouts.addEventListener("click", this.moveToPopup.bind(this));
     this.getlocalStorage();
-    loginButton.addEventListener("", this.insertIntoLogin.bind(this));
   }
   getPosition() {
     if (navigator.geolocation)
@@ -162,23 +161,6 @@ class App {
   }
 
   //Insert Login
-
-  async insertIntoLogin() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    const data = await axios.get("http://localhost:3000/user/login", {
-      username: username,
-      password: password,
-    });
-    console.log(data.data);
-    if (data.data === "UserFound") {
-      alert("User Found");
-      window.location.href = "index.html";
-    } else {
-      alert("User Not Found");
-    }
-  }
 
   loadmap(position) {
     this.#CurrLat = position.coords.latitude;
