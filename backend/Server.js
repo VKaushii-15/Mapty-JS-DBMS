@@ -18,9 +18,9 @@ console.log(process.env.HOST);
 console.log(process.env.USER);
 console.log(process.env.PASSWORD);
 const db = mysql.createConnection({
-  host: process.env.HOST,
-  user: process.env.USER,
-  password: `#$${process.env.PASSWORD}`,
+  host: "localhost",
+  user: "root",
+  password: "root15",
   database: "maptyDBMS",
 });
 
@@ -85,3 +85,98 @@ app.post("/user/register", (req, res) => {
     }
   );
 });
+
+app.post("/user/cardio" , (req , res) => {
+  const table = req.body.type;
+  const calories = req.body.calories;
+  const username = req.body.username;
+  const completed = req.body.completed;
+  const distance = req.body.distance;
+  const duration = req.body.duration;
+  console.log(`INSERT INTO ${table} (distance , calories , time , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`)
+  db.query(`INSERT INTO ${table} (distance , calories , time , completed , username) VALUES (?,?,?,?,?)`,[distance , calories , duration , completed , username],(err,result) =>{
+    if(err){
+      console.log(err);
+    }else{
+      console.log("Values inserted into",table);
+      res.send("Values Inserted into Cardio Table");
+    }
+  }
+  )
+  });
+
+app.post("/user/swim", (req, res) => {
+  const laps  = req.body.laps;
+  const calories = req.body.calories;
+  const username = req.body.username;
+  const completed = req.body.completed;
+  const distance = req.body.distance;
+  const duration = req.body.time;
+  console.log(`INSERT INTO swimming(distance , calories , laps ,time , completed , username) VALUES (${distance},${calories},${laps},${duration} , ${completed} , ${username})`)
+  db.query(`INSERT INTO swimming (distance , calories , laps ,time , completed , username) VALUES (?,?,?,?,?)`,[distance , calories ,laps, duration , completed , username],(err,result) =>{
+    if(err){
+      console.log(err);
+    }else{
+      console.log("Values inserted into",table);
+      res.send("Values Inserted into Cardio Table");
+    }
+  }
+  )
+  });
+
+  app.post("/user/home", (req, res) => {
+    const types = req.body.type;
+    const sets = req.body.sets;
+    const duration = req.body.duration;
+    const completed = req.body.completed;
+    const username = req.body.username;
+    console.log(`INSERT INTO homeworkout(types , sets , time , completed , username) VALUES (${types},${sets},${duration} , ${completed} , ${username})`)
+  db.query(`INSERT INTO homeworkout (types , sets , time , completed , username) VALUES (?,?,?,?,?)`,[types , sets , duration , completed , username],(err,result) =>{
+    if(err){
+      console.log(err);
+    }else{
+      console.log("Values inserted into",table);
+      res.send("Values Inserted into Home Workout Table");
+    }
+  }
+  )
+  });
+
+  app.get("/user/getcardio" , (req , res) => {
+    const username = req.body.username;
+    const query = `SELECT distance, calories, time, completed FROM running WHERE username = ${username} UNION ALL SELECT distance, calories, time, completed FROM cycling WHERE username = ${username};`
+    db.query(query , (err , result) => {
+      if(err){
+        console.log(err);
+      }else{
+        console.log("Values fetched from all tables");
+        res.send(result);
+      }
+    })
+  });
+
+  app.get("/user/getswim" , (req , res) => {
+    const username = req.body.username;
+    const query = `SELECT distance, calories, laps, time, completed FROM swimming WHERE username = ${username};`
+    db.query(query , (err , result) => {
+      if(err){
+        console.log(err);
+      }else{
+        console.log("Values fetched from swimming tables");
+        res.send(result);
+      }
+    })
+  });
+
+  app.get("/user/gethome" , (req , res) => {
+    const username = req.body.username;
+    const query = `SELECT types , sets , time , completed FROM homeworkout WHERE username = ${username};`
+    db.query(query , (err , result) => {
+      if(err){
+        console.log(err);
+      }else{
+        console.log("Values fetched from swimming tables");
+        res.send(result);
+      }
+    })
+  });

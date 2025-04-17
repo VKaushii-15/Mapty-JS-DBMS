@@ -1,7 +1,8 @@
+
 // prettier-ignore
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-const username = sessionStorage.getItem("username");
+const CurrUser = sessionStorage.getItem("username");
 
 const form = document.querySelector(".form");
 const containerWorkouts = document.querySelector(".workouts");
@@ -11,6 +12,9 @@ const inputDuration = document.querySelector(".form__input--duration");
 const inputCadence = document.querySelector(".form__input--cadence");
 const inputElevation = document.querySelector(".form__input--elevation");
 const close_button = document.querySelector(".close_button");
+const distanceLabel = document.getElementById("dist");
+const durationLabel = document.getElementById("dura");
+const lapsLabel = document.getElementById("laps");
 
 let map, mapEvent;
 
@@ -45,11 +49,11 @@ class Running extends Workout {
     calories,
     duration,
     completed = "NO",
-    username = "user"
+    username,
   ) {
     super(coords);
     this.distance = distance;
-    this.calories = calories;
+    this.calories = this.calcCalories();
     this.duration = duration;
     this.completed = completed;
     this.username = username;
@@ -65,11 +69,11 @@ class Cycling extends Workout {
     calories,
     duration,
     completed = "NO",
-    username = "user"
+    username,
   ) {
     super(coords);
     this.distance = distance;
-    this.calories = calories;
+    this.calories = this.calcCalories();
     this.duration = duration;
     this.completed = completed;
     this.username = username;
@@ -85,11 +89,11 @@ class Swimming extends Workout {
     laps,
     duration,
     completed = "NO",
-    username = "user"
+    username,
   ) {
     super();
     this.distance = distance;
-    this.calories = calories;
+    this.calories = this.calcCalories();
     this.laps = laps;
     this.duration = duration;
     this.completed = completed;
@@ -105,9 +109,9 @@ class HomeWorkout extends Workout {
     sets,
     duration,
     completed = "NO",
-    username = "user"
+    username,
   ) {
-    super(coords);
+    super();
     this.types = workoutType; // Like "Push-ups" or "Squats"
     this.sets = sets;
     this.duration = duration;
@@ -120,6 +124,7 @@ class HomeWorkout extends Workout {
 class App {
   #map;
   #mapEvent;
+  #CurrUser = CurrUser;
   #workout = [];
   #CurrLat;
   #Currlong;
@@ -130,21 +135,27 @@ class App {
     inputType.addEventListener("change", function () {
       // Get the current selected value
       const workoutType = inputType.value;
+      console.log("workout type = ", workoutType);
+      console.log(distanceLabel.textContent)
       // Toggle visibility based on the selected type
-      if (workoutType === "swimming") {
-        inputElevation
-          .closest(".form__row")
+      if (workoutType === "homeworkout") {
+        distanceLabel.textContent= "Type";
+        lapsLabel.textContent = "Sets";
+     } else {
+       distanceLabel.textContent = "Distance";
+       durationLabel.textContent = "Duration";
+     }
+      if (workoutType === "swimming" || workoutType === "homeworkout") {
+        inputElevation.closest(".form__row")
           .classList.remove("form__row--hidden");
-        inputCadence.closest(".form__row").classList.add("form__row--hidden");
-      } else {
+        // inputCadence.closest(".form__row").classList.add("form__row--hidden");
+      } else{
         inputElevation.closest(".form__row").classList.add("form__row--hidden");
-        inputCadence
-          .closest(".form__row")
-          .classList.remove("form__row--hidden");
+        inputCadence.closest(".form__row").classList.remove("form__row--hidden");
       }
+    
     });
-    containerWorkouts.addEventListener("click", this.moveToPopup.bind(this));
-    this.getlocalStorage();
+    this.getlocalStorage(CurrUser);
   }
   getPosition() {
     if (navigator.geolocation)
@@ -189,36 +200,35 @@ class App {
   }
   newWorkout(e) {
     e.preventDefault();
-
     const type = inputType.value;
-    const distance = +inputDistance.value;
-    const duration = +inputDuration.value;
     const { lat, lng } = this.#mapEvent.latlng;
     let workout;
 
     if (type === "running") {
+      const distance = +inputDistance.value;
+      const duration = +inputDuration.value;
       if (!Number.isFinite(distance) || !Number.isFinite(duration))
         return alert("Inputs must be Positive Numbers!");
-      workout = new Running([lat, lng], distance, 0, duration, "NO", "user");
+      workout = new Running([lat, lng], distance, 0, duration, "NO", CurrUser);
       this.renderWorkoutMarker(workout);
       this.renderWorkout(workout);
     }
 
     if (type === "cycling") {
-      const elevation = +inputElevation.value;
       if (
         !Number.isFinite(distance) ||
-        !Number.isFinite(duration) ||
-        !Number.isFinite(elevation)
+        !Number.isFinite(duration)  
       )
         return alert("Inputs must be Positive Numbers!");
-      workout = new Cycling([lat, lng], distance, 0, duration, "NO", "user");
+      workout = new Cycling([lat, lng], distance, 0, duration, "NO", CurrUser);
       workout.speed = distance / (duration / 60); // Calculate speed (km/h)
       this.renderWorkoutMarker(workout);
       this.renderWorkout(workout);
     }
 
     if (type === "swimming") {
+      const distance = +inputDistance.value;
+      const duration = +inputDuration.value;
       const laps = +inputElevation.value; // Assuming laps are entered in the elevation field
       if (
         !Number.isFinite(distance) ||
@@ -226,22 +236,24 @@ class App {
         !Number.isFinite(laps)
       )
         return alert("Inputs must be Positive Numbers!");
-      workout = new Swimming(distance, 0, laps, duration, "NO", "user");
+      workout = new Swimming(distance, 0, laps, duration, "NO", CurrUser);
       this.renderWorkout(workout);
     }
 
     if (type === "homeworkout") {
-      const workoutType = inputCadence.value; // Assuming workout type is entered in cadence field
+      const workoutType = inputDistance.value;
+      const duration = +inputDuration.value; // Assuming workout type is entered in cadence field
       const sets = +inputElevation.value; // Assuming sets are entered in elevation field
+      console.log(workoutType, duration, sets);
       if (!workoutType || !Number.isFinite(sets) || !Number.isFinite(duration))
         return alert("Inputs must be valid!");
-      workout = new HomeWorkout(workoutType, sets, duration, "NO", "user");
+      workout = new HomeWorkout(workoutType, sets, duration, "NO", CurrUser);
       this.renderWorkout(workout);
     }
     this.#workout.push(workout);
     console.log(workout);
     this.hideForm();
-    this.setlocalStorage();
+    this.setlocalStorage(workout);
   }
   renderWorkoutMarker(Workout) {
     const control = new L.Routing.Control({
@@ -284,14 +296,13 @@ class App {
   }
 
   renderWorkout(workout) {
+    const icon = getWorkoutIcon(workout.type)
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
         <h2 class="workout__title">${workout.description}
         <button class = "close_button">❌</h2>
         <div class="workout__details">
-          <span class="workout__icon">${
-            workout.type === "running" ? "🏃" : "🚴"
-          }</span>
+          <span class="workout__icon">${icon}</span>
           <span class="workout__value">${workout.distance}</span>
           <span class="workout__unit">km</span>
         </div>
@@ -299,7 +310,9 @@ class App {
           <span class="workout__icon">⏱</span>
           <span class="workout__value">${workout.duration}</span>
           <span class="workout__unit">min</span>
-        </div>`;
+        </div>
+        <div class="workout__details">
+          <input type="checkbox" class="workout__checkbox" id="completed" ${workout.completed === "YES" ? "checked" : ""}>`;
 
     // if (workout.type === "running")
     //   html += `
@@ -330,19 +343,6 @@ class App {
     //   </li>`;
     form.insertAdjacentHTML("afterend", html);
   }
-  moveToPopup(e) {
-    const workoutEl = e.target.closest(".workout");
-    if (!workoutEl) return;
-    const workout = this.#workout.find(
-      (work) => work.id === workoutEl.dataset.id
-    );
-    this.#map.setView(workout.coords, 17, {
-      animate: true,
-      pan: {
-        duration: 1,
-      },
-    });
-  }
   removeOneWorkout(e) {
     const workoutEl = e.target.closest(".workout");
     if (!workoutEl) return;
@@ -356,18 +356,54 @@ class App {
     workoutEl.remove();
     this.setlocalStorage();
   }
-  async setlocalStorage() {
-    localStorage.setItem("workouts", JSON.stringify(this.#workout));
+  async setlocalStorage(workout) {
+    const type = workout.type;
+    if (type === "running" || type === "cycling") {
+      const response = await axios.post("http://localhost:3000/user/cardio", workout);
+      console.log(response.data);
+      if (response.data === "Values Inserted into Cardio Table") {
+        alert("Workout is Saved Successfully!")
+      } else {
+        alert("Error saving profile. Please try again.");
+      }
+    }
   }
-  getlocalStorage() {
-    const data = JSON.parse(localStorage.getItem("workouts"));
-
-    if (!data) return;
-
-    this.#workout = data;
-    this.#workout.forEach((work) => {
-      this.renderWorkout(work);
+  async getlocalStorage(CurrUser) {
+    const cardio = await axios.get("http://localhost:3000/user/getcardio" ,{
+      username : CurrUser
     });
+    console.log(cardio.data);
+    const cardioworkouts = cardio.data;
+    cardioworkouts.forEach((workout) => {
+      this.renderWorkout(workout);
+    });
+    const swim = await axios.get("http://localhost:3000/user/getswim" , CurrUser);
+    console.log(swim.data);
+    const swimworkouts = swim.data;
+    swimworkouts.forEach((workout) => {
+      this.renderWorkout(workout);
+    });
+    const home = await axios.get("http://localhost:3000/user/gethome" , CurrUser);
+    console.log(home.data);
+    const homeworkouts = home.data;
+    homeworkouts.forEach((workout) => {
+      this.renderWorkout(workout);
+    });
+  }
+}
+
+function getWorkoutIcon(type) {
+  switch (type) {
+    case "running":
+      return "🏃";
+    case "cycling":
+      return "🚴";
+    case "swimming":
+      return "🏊";
+    case "homeworkout":
+      return "🏋️";
+    default:
+      return "❓"; // Default icon for unknown workout types
   }
 }
 

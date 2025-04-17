@@ -47,21 +47,22 @@
       <ul class="workouts">
         <form class="form hidden">
           <div class="form__row">
-            <label class="form__label">Type</label>
+            <label class="form__label">Form</label>
             <select class="form__input form__input--type">
               <option value="running">Running</option>
               <option value="cycling">Cycling</option>
               <option value="swimming">Swimming</option>
-              <option value="Home workout">Home Workout</option>
+              <option value="homeworkout" name="homeworkout">Home Workout</option>
             </select>
           </div>
           <div class="form__row">
-            <label class="form__label">Distance</label>
-            <input class="form__input form__input--distance" placeholder="km" />
+            <span class="form__label" id="dist">Distance</span>
+            <input id="distance" class="form__input form__input--distance" placeholder="km" />
           </div>
           <div class="form__row">
-            <label class="form__label">Duration</label>
+            <span class="form__label" id="dura">Duration</span>
             <input
+              id="duration"
               class="form__input form__input--duration"
               placeholder="min"
             />
@@ -74,7 +75,7 @@
             />
           </div> -->
           <div class="form__row form__row--hidden">
-            <label class="form__label">Laps</label>
+            <label class="form__label" id = "laps">Laps</label>
             <input
               class="form__input form__input--elevation"
               placeholder="meters"
