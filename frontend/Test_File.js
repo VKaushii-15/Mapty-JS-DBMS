@@ -295,7 +295,7 @@ class App {
     }
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
-        <h2 class="workout__title">${settitle}</h2>
+        <h2 class="workout__title">${settitle()}</h2>
         <div class="workout__details">
           <span class="workout__icon">${icon}</span>
           <span class="workout__value">${workout.distance}</span>
