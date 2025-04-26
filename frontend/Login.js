@@ -4,6 +4,8 @@ async function insertIntoLogin(user, pass) {
   console.log("Username = ", user);
   console.log("Password = ", pass);
 
+  console.log("loginForm = ", loginForm.value.user);
+
   sessionStorage.setItem("username", user);
   sessionStorage.setItem("password", pass);
 

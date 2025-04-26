@@ -33,7 +33,7 @@ db.connect((err) => {
 });
 
 app.post("/user/login", (req, res) => {
-  const { username, password } = req.body;
+  let { username, password } = req.body;
   console.log("Username: ", username);
   console.log("Password: ", password);
   console.log(
@@ -86,97 +86,155 @@ app.post("/user/register", (req, res) => {
   );
 });
 
-app.post("/user/cardio" , (req , res) => {
+app.post("/user/run", (req, res) => {
   const table = req.body.type;
   const calories = req.body.calories;
   const username = req.body.username;
   const completed = req.body.completed;
   const distance = req.body.distance;
   const duration = req.body.duration;
-  console.log(`INSERT INTO ${table} (distance , calories , time , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`)
-  db.query(`INSERT INTO ${table} (distance , calories , time , completed , username) VALUES (?,?,?,?,?)`,[distance , calories , duration , completed , username],(err,result) =>{
-    if(err){
-      console.log(err);
-    }else{
-      console.log("Values inserted into",table);
-      res.send("Values Inserted into Cardio Table");
+  console.log(
+    `INSERT INTO running (distance , calories , time , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`
+  );
+  db.query(
+    `INSERT INTO running (distance , calories , time , completed , username) VALUES (?,?,?,?,?)`,
+    [distance, calories, duration, completed, username],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Values inserted into", table);
+        res.send("Values Inserted into running Table");
+      }
     }
-  }
-  )
-  });
+  );
+});
+
+app.post("/user/cycling", (req, res) => {
+  const table = req.body.type;
+  const calories = req.body.calories;
+  const username = req.body.username;
+  const completed = req.body.completed;
+  const distance = req.body.distance;
+  const duration = req.body.duration;
+  console.log(
+    `INSERT INTO cycling (distance , calories , time , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`
+  );
+  db.query(
+    `INSERT INTO cycling (distance , calories , time , completed , username) VALUES (?,?,?,?,?)`,
+    [distance, calories, duration, completed, username],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Values inserted into", table);
+        res.send("Values Inserted into cycling Table");
+      }
+    }
+  );
+});
 
 app.post("/user/swim", (req, res) => {
-  const laps  = req.body.laps;
+  const laps = req.body.laps;
   const calories = req.body.calories;
   const username = req.body.username;
   const completed = req.body.completed;
   const distance = req.body.distance;
   const duration = req.body.time;
-  console.log(`INSERT INTO swimming(distance , calories , laps ,time , completed , username) VALUES (${distance},${calories},${laps},${duration} , ${completed} , ${username})`)
-  db.query(`INSERT INTO swimming (distance , calories , laps ,time , completed , username) VALUES (?,?,?,?,?)`,[distance , calories ,laps, duration , completed , username],(err,result) =>{
-    if(err){
-      console.log(err);
-    }else{
-      console.log("Values inserted into",table);
-      res.send("Values Inserted into Cardio Table");
+  console.log(
+    `INSERT INTO swimming(distance , calories , laps ,time , completed , username) VALUES (${distance},${calories},${laps},${duration} , ${completed} , ${username})`
+  );
+  db.query(
+    `INSERT INTO swimming (distance , calories , laps ,time , completed , username) VALUES (?,?,?,?,?)`,
+    [distance, calories, laps, duration, completed, username],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Values inserted into", table);
+        res.send("Values Inserted into Swimming Table");
+      }
     }
-  }
-  )
-  });
+  );
+});
 
-  app.post("/user/home", (req, res) => {
-    const types = req.body.type;
-    const sets = req.body.sets;
-    const duration = req.body.duration;
-    const completed = req.body.completed;
-    const username = req.body.username;
-    console.log(`INSERT INTO homeworkout(types , sets , time , completed , username) VALUES (${types},${sets},${duration} , ${completed} , ${username})`)
-  db.query(`INSERT INTO homeworkout (types , sets , time , completed , username) VALUES (?,?,?,?,?)`,[types , sets , duration , completed , username],(err,result) =>{
-    if(err){
-      console.log(err);
-    }else{
-      console.log("Values inserted into",table);
-      res.send("Values Inserted into Home Workout Table");
+app.post("/user/home", (req, res) => {
+  const types = req.body.type;
+  const sets = req.body.sets;
+  const duration = req.body.duration;
+  const completed = req.body.completed;
+  const username = req.body.username;
+  console.log(
+    `INSERT INTO homeworkout(types , sets , time , completed , username) VALUES (${types},${sets},${duration} , ${completed} , ${username})`
+  );
+  db.query(
+    `INSERT INTO homeworkout (types , sets , time , completed , username) VALUES (?,?,?,?,?)`,
+    [types, sets, duration, completed, username],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Values inserted into", table);
+        res.send("Values Inserted into Home Workout Table");
+      }
     }
-  }
-  )
-  });
+  );
+});
 
-  app.get("/user/getcardio" , (req , res) => {
-    const username = req.body.username;
-    const query = `SELECT distance, calories, time, completed FROM running WHERE username = ${username} UNION ALL SELECT distance, calories, time, completed FROM cycling WHERE username = ${username};`
-    db.query(query , (err , result) => {
-      if(err){
-        console.log(err);
-      }else{
-        console.log("Values fetched from all tables");
-        res.send(result);
-      }
-    })
+app.get("/user/getrun", (req, res) => {
+  const { username } = req.query;
+  console.log("Username recieved from getstorage: ", username);
+  const query = `SELECT distance, calories, time, completed FROM running WHERE username = "${username}";`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Values fetched from Running table");
+      const output = JSON.stringify(result);
+      res.send(output);
+    }
   });
+});
 
-  app.get("/user/getswim" , (req , res) => {
-    const username = req.body.username;
-    const query = `SELECT distance, calories, laps, time, completed FROM swimming WHERE username = ${username};`
-    db.query(query , (err , result) => {
-      if(err){
-        console.log(err);
-      }else{
-        console.log("Values fetched from swimming tables");
-        res.send(result);
-      }
-    })
+app.get("/user/getcycling", (req, res) => {
+  const { username } = req.query;
+  console.log("Username recieved from getstorage: ", username);
+  const query = `SELECT distance, calories, time, completed FROM cycling WHERE username = "${username}";`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Values fetched from Cycling table");
+      const output = JSON.stringify(result);
+      res.send(output);
+    }
   });
+});
 
-  app.get("/user/gethome" , (req , res) => {
-    const username = req.body.username;
-    const query = `SELECT types , sets , time , completed FROM homeworkout WHERE username = ${username};`
-    db.query(query , (err , result) => {
-      if(err){
-        console.log(err);
-      }else{
-        console.log("Values fetched from swimming tables");
-        res.send(result);
-      }
-    })
+app.get("/user/getswim", (req, res) => {
+  const { username } = req.query;
+  const query = `SELECT distance, calories, laps, time, completed FROM swimming WHERE username = "${username}";`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Values fetched from swimming table");
+      const output = JSON.stringify(result);
+      res.send(output);
+    }
   });
+});
+
+app.get("/user/gethome", (req, res) => {
+  const { username } = req.query;
+  const query = `SELECT types , sets , time , completed FROM homeworkout WHERE username = "${username}";`;
+  db.query(query, (err, result) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Values fetched from HomeWorkout table");
+      const output = JSON.stringify(result);
+      res.send(output);
+    }
+  });
+});

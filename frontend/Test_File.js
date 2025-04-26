@@ -1,4 +1,3 @@
-
 // prettier-ignore
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -26,17 +25,23 @@ class Workout {
     this.distance = distance;
     this.duration = duration;
   }
-  setdescription() {
-    //prettier-ignore
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    //prettier-ignore
-    this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`;
-  }
+  // setdescription(type) {
+  //   //prettier-ignore
+  //   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  //   //prettier-ignore
+  //   this.description = `${type[0].toUpperCase()}${type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`;
+  //   console.log(this.description);
+  // }
   calcCalories() {
-    if (this.type === "running") this.calories = this.distance * 0.75 * 60;
-    if (this.type === "cycling") this.calories = this.distance * 0.5 * 60;
-    if (this.type === "swimming") this.calories = this.distance * 0.8 * 60;
-    if (this.type === "homeworkout") this.calories = this.distance * 0.5 * 60;
+    if (this.type === "running")
+      this.calories = this.distance * 0.75 * this.duration;
+    if (this.type === "cycling")
+      this.calories = this.distance * 0.5 * this.duration;
+    if (this.type === "swimming")
+      this.calories = this.distance * 0.8 * this.duration;
+    if (this.type === "homeworkout")
+      this.calories = this.distance * 0.6 * this.duration;
+
     return this.calories;
   }
 }
@@ -49,7 +54,7 @@ class Running extends Workout {
     calories,
     duration,
     completed = "NO",
-    username,
+    username
   ) {
     super(coords);
     this.distance = distance;
@@ -57,7 +62,7 @@ class Running extends Workout {
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription();
+    this.setdescription("running");
   }
 }
 
@@ -69,7 +74,7 @@ class Cycling extends Workout {
     calories,
     duration,
     completed = "NO",
-    username,
+    username
   ) {
     super(coords);
     this.distance = distance;
@@ -77,20 +82,13 @@ class Cycling extends Workout {
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription();
+    this.setdescription("cycling");
   }
 }
 
 class Swimming extends Workout {
   type = "swimming";
-  constructor(
-    distance,
-    calories,
-    laps,
-    duration,
-    completed = "NO",
-    username,
-  ) {
+  constructor(distance, calories, laps, duration, completed = "NO", username) {
     super();
     this.distance = distance;
     this.calories = this.calcCalories();
@@ -98,26 +96,20 @@ class Swimming extends Workout {
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription();
+    this.setdescription("swimming");
   }
 }
 
 class HomeWorkout extends Workout {
   type = "homeworkout";
-  constructor(
-    workoutType,
-    sets,
-    duration,
-    completed = "NO",
-    username,
-  ) {
+  constructor(workoutType, sets, duration, completed = "NO", username) {
     super();
     this.types = workoutType; // Like "Push-ups" or "Squats"
     this.sets = sets;
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription();
+    this.setdescription("homeworkout");
   }
 }
 
@@ -136,26 +128,29 @@ class App {
       // Get the current selected value
       const workoutType = inputType.value;
       console.log("workout type = ", workoutType);
-      console.log(distanceLabel.textContent)
+      console.log(distanceLabel.textContent);
       // Toggle visibility based on the selected type
       if (workoutType === "homeworkout") {
-        distanceLabel.textContent= "Type";
+        distanceLabel.textContent = "Type";
         lapsLabel.textContent = "Sets";
-     } else {
-       distanceLabel.textContent = "Distance";
-       durationLabel.textContent = "Duration";
-     }
+      } else {
+        distanceLabel.textContent = "Distance";
+        durationLabel.textContent = "Duration";
+      }
       if (workoutType === "swimming" || workoutType === "homeworkout") {
-        inputElevation.closest(".form__row")
+        inputElevation
+          .closest(".form__row")
           .classList.remove("form__row--hidden");
         // inputCadence.closest(".form__row").classList.add("form__row--hidden");
-      } else{
+      } else {
         inputElevation.closest(".form__row").classList.add("form__row--hidden");
-        inputCadence.closest(".form__row").classList.remove("form__row--hidden");
+        inputCadence
+          .closest(".form__row")
+          .classList.remove("form__row--hidden");
       }
-    
     });
-    this.getlocalStorage(CurrUser);
+    console.log("CurrUser = ", CurrUser);
+    this.getlocalStorage("Sheddy");
   }
   getPosition() {
     if (navigator.geolocation)
@@ -215,10 +210,7 @@ class App {
     }
 
     if (type === "cycling") {
-      if (
-        !Number.isFinite(distance) ||
-        !Number.isFinite(duration)  
-      )
+      if (!Number.isFinite(distance) || !Number.isFinite(duration))
         return alert("Inputs must be Positive Numbers!");
       workout = new Cycling([lat, lng], distance, 0, duration, "NO", CurrUser);
       workout.speed = distance / (duration / 60); // Calculate speed (km/h)
@@ -267,7 +259,7 @@ class App {
       lineOptions: {
         styles: [
           {
-            color: Workout.type === "running" ? "green" : "orange",
+            color: Workout.type === getWorkoutColour(Workout.type),
             opacity: 1,
             weight: 4,
           },
@@ -286,9 +278,7 @@ class App {
           className: `${Workout.type}-popup`,
         })
       )
-      .setPopupContent(
-        `${Workout.type === "running" ? "🏃" : "🚴"} ${Workout.description}`
-      )
+      .setPopupContent(`${getWorkoutIcon(Workout.type)} ${Workout.description}`)
       .openPopup();
   }
   catch(error) {
@@ -296,11 +286,16 @@ class App {
   }
 
   renderWorkout(workout) {
-    const icon = getWorkoutIcon(workout.type)
+    const icon = getWorkoutIcon(workout.type);
+    function settitle() {
+      if (workout.type === "running") return "Running";
+      if (workout.type === "cycling") return "Cycling";
+      if (workout.type === "swimming") return "Swimming";
+      if (workout.type === "homeworkout") return "Home Workout";
+    }
     let html = `
       <li class="workout workout--${workout.type}" data-id="${workout.id}">
-        <h2 class="workout__title">${workout.description}
-        <button class = "close_button">❌</h2>
+        <h2 class="workout__title">${settitle}</h2>
         <div class="workout__details">
           <span class="workout__icon">${icon}</span>
           <span class="workout__value">${workout.distance}</span>
@@ -308,11 +303,18 @@ class App {
         </div>
         <div class="workout__details">
           <span class="workout__icon">⏱</span>
-          <span class="workout__value">${workout.duration}</span>
+          <span class="workout__value">${workout.time}</span>
           <span class="workout__unit">min</span>
         </div>
         <div class="workout__details">
-          <input type="checkbox" class="workout__checkbox" id="completed" ${workout.completed === "YES" ? "checked" : ""}>`;
+          <span class="workout__icon">🔥</span>
+          <span class="workout__value">${workout.calories}</span>
+          <span class="workout__unit">kcal</span>
+        </div>
+        <div class="workout__details">
+          <input type="checkbox" class="workout__checkbox" id="completed" ${
+            workout.completed === "YES" ? "checked" : ""
+          }>`;
 
     // if (workout.type === "running")
     //   html += `
@@ -358,34 +360,76 @@ class App {
   }
   async setlocalStorage(workout) {
     const type = workout.type;
-    if (type === "running" || type === "cycling") {
-      const response = await axios.post("http://localhost:3000/user/cardio", workout);
-      console.log(response.data);
-      if (response.data === "Values Inserted into Cardio Table") {
-        alert("Workout is Saved Successfully!")
-      } else {
-        alert("Error saving profile. Please try again.");
-      }
+    switch (type) {
+      case "running":
+        response = await axios.post("http://localhost:3000/user/run", {
+          workout,
+        });
+        break;
+      case "cycling":
+        response = await axios.post("http://localhost:3000/user/cycling", {
+          workout,
+        });
+        break;
+      case "swimming":
+        response = await axios.post("http://localhost:3000/user/swim", {
+          workout,
+        });
+        break;
+      case "homeworkout":
+        response = await axios.post("http://localhost:3000/user/home", {
+          workout,
+        });
+        break;
+      default:
+        console.error("Unknown workout type:", type);
+        return;
+    }
+    console.log(response.data);
+    if (response.data === "Values Inserted into Cardio Table") {
+      alert("Workout is Saved Successfully!");
+    } else {
+      alert("Error saving profile. Please try again.");
     }
   }
+
   async getlocalStorage(CurrUser) {
-    const cardio = await axios.get("http://localhost:3000/user/getcardio" ,{
-      username : CurrUser
-    });
-    console.log(cardio.data);
-    const cardioworkouts = cardio.data;
-    cardioworkouts.forEach((workout) => {
+    console.log("getlocalStorage called with username:", CurrUser);
+    if (!CurrUser) {
+      console.error("Error: username is undefined or null.");
+      return;
+    }
+    const run = await axios.get(
+      `http://localhost:3000/user/getrun?username=${CurrUser}`
+    );
+    const runworkouts = run.data;
+    console.log(runworkouts);
+    runworkouts.forEach((workout) => {
+      workout.type = "running";
       this.renderWorkout(workout);
     });
-    const swim = await axios.get("http://localhost:3000/user/getswim" , CurrUser);
-    console.log(swim.data);
+    const cycling = await axios.get(
+      `http://localhost:3000/user/getcycling?username=${CurrUser}`
+    );
+    const cyclingworkouts = cycling.data;
+    console.log(cyclingworkouts);
+    cyclingworkouts.forEach((workout) => {
+      this.renderWorkout(workout);
+    });
+
+    const swim = await axios.get(
+      `http://localhost:3000/user/getswim?username=${CurrUser}`
+    );
     const swimworkouts = swim.data;
+    console.log(swimworkouts);
     swimworkouts.forEach((workout) => {
       this.renderWorkout(workout);
     });
-    const home = await axios.get("http://localhost:3000/user/gethome" , CurrUser);
-    console.log(home.data);
+    const home = await axios.get(
+      `http://localhost:3000/user/gethome?username=${CurrUser}`
+    );
     const homeworkouts = home.data;
+    console.log(homeworkouts);
     homeworkouts.forEach((workout) => {
       this.renderWorkout(workout);
     });
@@ -404,6 +448,21 @@ function getWorkoutIcon(type) {
       return "🏋️";
     default:
       return "❓"; // Default icon for unknown workout types
+  }
+}
+
+function getWorkoutColour(type) {
+  switch (type) {
+    case "running":
+      return "green";
+    case "cycling":
+      return "orange";
+    case "swimming":
+      return "blue";
+    case "homeworkout":
+      return "purple";
+    default:
+      return "gray"; // Default color for unknown workout types
   }
 }
 
