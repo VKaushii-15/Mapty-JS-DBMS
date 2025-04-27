@@ -14,6 +14,7 @@ const close_button = document.querySelector(".close_button");
 const distanceLabel = document.getElementById("dist");
 const durationLabel = document.getElementById("dura");
 const lapsLabel = document.getElementById("laps");
+const checkbox = document.querySelector(".workout__checkbox");
 
 let map, mapEvent;
 
@@ -32,16 +33,16 @@ class Workout {
   //   this.description = `${type[0].toUpperCase()}${type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}`;
   //   console.log(this.description);
   // }
-  calcCalories() {
-    if (this.type === "running")
-      this.calories = this.distance * 0.75 * this.duration;
-    if (this.type === "cycling")
-      this.calories = this.distance * 0.5 * this.duration;
-    if (this.type === "swimming")
-      this.calories = this.distance * 0.8 * this.duration;
-    if (this.type === "homeworkout")
-      this.calories = this.distance * 0.6 * this.duration;
-
+  calcCalories(distance = 1, duration = 1, laps = 1, sets = 1) {
+    if (this.type === "running") {
+      this.calories = distance * 0.75 * duration;
+    } else if (this.type === "cycling") {
+      this.calories = distance * 0.5 * duration;
+    } else if (this.type === "swimming") {
+      this.calories = distance * laps * 0.8 * duration;
+    } else if (this.type === "homeworkout") {
+      this.calories = sets * 0.6 * duration;
+    }
     return this.calories;
   }
 }
@@ -58,11 +59,10 @@ class Running extends Workout {
   ) {
     super(coords);
     this.distance = distance;
-    this.calories = this.calcCalories();
+    this.calories = this.calcCalories(distance, duration);
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription("running");
   }
 }
 
@@ -78,11 +78,10 @@ class Cycling extends Workout {
   ) {
     super(coords);
     this.distance = distance;
-    this.calories = this.calcCalories();
+    this.calories = this.calcCalories(distance, duration);
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription("cycling");
   }
 }
 
@@ -91,25 +90,31 @@ class Swimming extends Workout {
   constructor(distance, calories, laps, duration, completed = "NO", username) {
     super();
     this.distance = distance;
-    this.calories = this.calcCalories();
     this.laps = laps;
+    this.calories = this.calcCalories(distance, duration, laps);
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription("swimming");
   }
 }
 
 class HomeWorkout extends Workout {
   type = "homeworkout";
-  constructor(workoutType, sets, duration, completed = "NO", username) {
+  constructor(
+    workoutType,
+    calories,
+    sets,
+    duration,
+    completed = "NO",
+    username
+  ) {
     super();
     this.types = workoutType; // Like "Push-ups" or "Squats"
     this.sets = sets;
+    this.calories = this.calcCalories(duration, sets); // Assuming calories are calculated based on the workout type and duration
     this.duration = duration;
     this.completed = completed;
     this.username = username;
-    this.setdescription("homeworkout");
   }
 }
 
@@ -128,7 +133,6 @@ class App {
       // Get the current selected value
       const workoutType = inputType.value;
       console.log("workout type = ", workoutType);
-      console.log(distanceLabel.textContent);
       // Toggle visibility based on the selected type
       if (workoutType === "homeworkout") {
         distanceLabel.textContent = "Type";
@@ -144,13 +148,11 @@ class App {
         // inputCadence.closest(".form__row").classList.add("form__row--hidden");
       } else {
         inputElevation.closest(".form__row").classList.add("form__row--hidden");
-        inputCadence
-          .closest(".form__row")
-          .classList.remove("form__row--hidden");
+        inputCadence.classList.remove("form__row--hidden");
       }
     });
     console.log("CurrUser = ", CurrUser);
-    this.getlocalStorage("Sheddy");
+    this.getlocalStorage(CurrUser);
   }
   getPosition() {
     if (navigator.geolocation)
@@ -210,10 +212,11 @@ class App {
     }
 
     if (type === "cycling") {
+      const distance = +inputDistance.value;
+      const duration = +inputDuration.value;
       if (!Number.isFinite(distance) || !Number.isFinite(duration))
         return alert("Inputs must be Positive Numbers!");
       workout = new Cycling([lat, lng], distance, 0, duration, "NO", CurrUser);
-      workout.speed = distance / (duration / 60); // Calculate speed (km/h)
       this.renderWorkoutMarker(workout);
       this.renderWorkout(workout);
     }
@@ -239,7 +242,15 @@ class App {
       console.log(workoutType, duration, sets);
       if (!workoutType || !Number.isFinite(sets) || !Number.isFinite(duration))
         return alert("Inputs must be valid!");
-      workout = new HomeWorkout(workoutType, sets, duration, "NO", CurrUser);
+      const calories = sets * 0.6 * duration; // Calculate calories for HomeWorkout
+      workout = new HomeWorkout(
+        workoutType,
+        calories,
+        sets,
+        duration,
+        "NO",
+        CurrUser
+      );
       this.renderWorkout(workout);
     }
     this.#workout.push(workout);
@@ -278,7 +289,7 @@ class App {
           className: `${Workout.type}-popup`,
         })
       )
-      .setPopupContent(`${getWorkoutIcon(Workout.type)} ${Workout.description}`)
+      .setPopupContent(`${getWorkoutIcon(Workout.type)} ${Workout.type}`)
       .openPopup();
   }
   catch(error) {
@@ -287,62 +298,58 @@ class App {
 
   renderWorkout(workout) {
     const icon = getWorkoutIcon(workout.type);
-    function settitle() {
-      if (workout.type === "running") return "Running";
-      if (workout.type === "cycling") return "Cycling";
-      if (workout.type === "swimming") return "Swimming";
-      if (workout.type === "homeworkout") return "Home Workout";
-    }
     let html = `
-      <li class="workout workout--${workout.type}" data-id="${workout.id}">
-        <h2 class="workout__title">${settitle()}</h2>
-        <div class="workout__details">
-          <span class="workout__icon">${icon}</span>
-          <span class="workout__value">${workout.distance}</span>
-          <span class="workout__unit">km</span>
-        </div>
-        <div class="workout__details">
-          <span class="workout__icon">⏱</span>
-          <span class="workout__value">${workout.time}</span>
-          <span class="workout__unit">min</span>
-        </div>
+      <li class="workout workout--${workout.type}" 
+          data-id="${workout.id}"
+          data-type="${workout.type}"
+          data-duration="${workout.duration}"
+          ${
+            workout.type === "homeworkout"
+              ? `data-types="${workout.types}" data-sets="${workout.sets}"`
+              : `data-distance="${workout.distance}"`
+          }>
+        <h2 class="workout__title">${workout.type.toUpperCase()}</h2>
+        ${
+          workout.type === "homeworkout"
+            ? `
+            <div class="workout__details">
+              <span class="workout__icon">${icon}</span>
+              <span class="workout__value">${workout.types}</span>
+              <span class="workout__unit">type</span>
+            </div>
+            <div class="workout__details">
+              <span class="workout__icon">⏱</span>
+              <span class="workout__value">${workout.duration}</span>
+              <span class="workout__unit">min</span>
+            </div>
+            <div class="workout__details">
+              <span class="workout__icon">🔄</span>
+              <span class="workout__value">${workout.sets}</span>
+              <span class="workout__unit">sets</span>
+            </div>`
+            : `
+            <div class="workout__details">
+              <span class="workout__icon">${icon}</span>
+              <span class="workout__value">${workout.distance}</span>
+              <span class="workout__unit">km</span>
+            </div>
+            <div class="workout__details">
+              <span class="workout__icon">⏱</span>
+              <span class="workout__value">${workout.duration}</span>
+              <span class="workout__unit">min</span>
+            </div>`
+        }
         <div class="workout__details">
           <span class="workout__icon">🔥</span>
           <span class="workout__value">${workout.calories}</span>
           <span class="workout__unit">kcal</span>
         </div>
         <div class="workout__details">
-          <input type="checkbox" class="workout__checkbox" id="completed" ${
-            workout.completed === "YES" ? "checked" : ""
-          }>`;
+          <input type="checkbox" class="workout__checkbox" id="completed" 
+            ${workout.completed === "YES" ? "checked" : ""}>
+        </div>
+      </li>`;
 
-    // if (workout.type === "running")
-    //   html += `
-    //     <div class="workout__details">
-    //       <span class="workout__icon">⚡️</span>
-    //       <span class="workout__value">${workout.pace.toFixed(1)}</span>
-    //       <span class="workout__unit">min/km</span>
-    //     </div>
-    //     <div class="workout__details">
-    //       <span class="workout__icon">🦶🏼</span>
-    //       <span class="workout__value">${workout.cadence}</span>
-    //       <span class="workout__unit">spm</span>
-    //     </div>
-    //   </li>
-    //  `;
-    // if (workout.type === "cycling")
-    //   html += `
-    //     <div class="workout__details">
-    //       <span class="workout__icon">⚡️</span>
-    //       <span class="workout__value">${workout.speed.toFixed(1)}</span>
-    //       <span class="workout__unit">km/h</span>
-    //     </div>
-    //     <div class="workout__details">
-    //       <span class="workout__icon">🏔️</span>
-    //       <span class="workout__value">${workout.elevationGain}</span>
-    //       <span class="workout__unit">m</span>
-    //     </div>
-    //   </li>`;
     form.insertAdjacentHTML("afterend", html);
   }
   removeOneWorkout(e) {
@@ -360,23 +367,28 @@ class App {
   }
   async setlocalStorage(workout) {
     const type = workout.type;
+    let response;
     switch (type) {
       case "running":
+        console.log("Workout passed to setlocalStorage: ", workout);
         response = await axios.post("http://localhost:3000/user/run", {
           workout,
         });
         break;
       case "cycling":
+        console.log("Workout passed to setlocalStorage: ", workout);
         response = await axios.post("http://localhost:3000/user/cycling", {
           workout,
         });
         break;
       case "swimming":
+        console.log("Workout passed to setlocalStorage: ", workout);
         response = await axios.post("http://localhost:3000/user/swim", {
           workout,
         });
         break;
       case "homeworkout":
+        console.log("Workout passed to setlocalStorage: ", workout);
         response = await axios.post("http://localhost:3000/user/home", {
           workout,
         });
@@ -386,10 +398,10 @@ class App {
         return;
     }
     console.log(response.data);
-    if (response.data === "Values Inserted into Cardio Table") {
+    if (response.data === "Values Inserted into Required Table") {
       alert("Workout is Saved Successfully!");
     } else {
-      alert("Error saving profile. Please try again.");
+      alert("Error saving your workout. Please try again.");
     }
   }
 
@@ -414,6 +426,7 @@ class App {
     const cyclingworkouts = cycling.data;
     console.log(cyclingworkouts);
     cyclingworkouts.forEach((workout) => {
+      workout.type = "cycling";
       this.renderWorkout(workout);
     });
 
@@ -423,6 +436,7 @@ class App {
     const swimworkouts = swim.data;
     console.log(swimworkouts);
     swimworkouts.forEach((workout) => {
+      workout.type = "swimming";
       this.renderWorkout(workout);
     });
     const home = await axios.get(
@@ -431,6 +445,7 @@ class App {
     const homeworkouts = home.data;
     console.log(homeworkouts);
     homeworkouts.forEach((workout) => {
+      workout.type = "homeworkout";
       this.renderWorkout(workout);
     });
   }

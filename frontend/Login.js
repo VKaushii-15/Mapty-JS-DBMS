@@ -17,8 +17,11 @@ async function insertIntoLogin(user, pass) {
     window.location.href = "./index.html";
   } else {
     console.log(user, pass);
-    alert("New User , Redirecting to Profile Register Page");
-    window.location.href = "./profile.html";
+    if (confirm("User Not Found. Do you want to register?")) {
+      window.location.href = "./profile.html";
+    } else {
+      window.location.href = "./login.html";
+    }
   }
 }
 

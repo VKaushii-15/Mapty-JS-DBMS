@@ -87,95 +87,100 @@ app.post("/user/register", (req, res) => {
 });
 
 app.post("/user/run", (req, res) => {
-  const table = req.body.type;
-  const calories = req.body.calories;
-  const username = req.body.username;
-  const completed = req.body.completed;
-  const distance = req.body.distance;
-  const duration = req.body.duration;
+  const rec = req.body.workout;
+  const calories = rec.calories;
+  const username = rec.username;
+  const completed = rec.completed;
+  const distance = rec.distance;
+  const duration = rec.duration;
   console.log(
-    `INSERT INTO running (distance , calories , time , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`
+    `INSERT INTO running (distance , calories , duration , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`
   );
   db.query(
-    `INSERT INTO running (distance , calories , time , completed , username) VALUES (?,?,?,?,?)`,
+    "INSERT INTO running (distance , calories , duration , completed , username) VALUES (?,?,?,?,?)",
     [distance, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        console.log("Values inserted into", table);
-        res.send("Values Inserted into running Table");
+        console.log("Values inserted into running table");
+        res.send("Values Inserted into Required Table");
       }
     }
   );
 });
 
 app.post("/user/cycling", (req, res) => {
-  const table = req.body.type;
-  const calories = req.body.calories;
-  const username = req.body.username;
-  const completed = req.body.completed;
-  const distance = req.body.distance;
-  const duration = req.body.duration;
+  const rec = req.body.workout;
+  const calories = rec.calories;
+  const username = rec.username;
+  const completed = rec.completed;
+  const distance = rec.distance;
+  const duration = rec.duration;
   console.log(
-    `INSERT INTO cycling (distance , calories , time , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`
+    `INSERT INTO cycling (distance , calories , duration , completed , username) VALUES (${distance},${calories},${duration} , ${completed} , ${username})`
   );
   db.query(
-    `INSERT INTO cycling (distance , calories , time , completed , username) VALUES (?,?,?,?,?)`,
+    "INSERT INTO cycling (distance , calories , duration , completed , username) VALUES (?,?,?,?,?)",
     [distance, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        console.log("Values inserted into", table);
-        res.send("Values Inserted into cycling Table");
+        console.log("Values inserted into cycling table");
+        res.send("Values Inserted into Required Table");
       }
     }
   );
 });
 
 app.post("/user/swim", (req, res) => {
-  const laps = req.body.laps;
-  const calories = req.body.calories;
-  const username = req.body.username;
-  const completed = req.body.completed;
-  const distance = req.body.distance;
-  const duration = req.body.time;
+  const rec = req.body.workout;
+  const laps = rec.laps;
+  const calories = rec.calories;
+  const username = rec.username;
+  const completed = rec.completed;
+  const distance = rec.distance;
+  const duration = rec.duration;
   console.log(
-    `INSERT INTO swimming(distance , calories , laps ,time , completed , username) VALUES (${distance},${calories},${laps},${duration} , ${completed} , ${username})`
+    `INSERT INTO swimming(distance , calories , laps ,duration , completed , username) VALUES (${distance},${calories},${laps},${duration} , ${completed} , ${username})`
   );
   db.query(
-    `INSERT INTO swimming (distance , calories , laps ,time , completed , username) VALUES (?,?,?,?,?)`,
+    "INSERT INTO swimming (distance , calories , laps ,duration , completed , username) VALUES (?,?,?,?,?,?)",
     [distance, calories, laps, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        console.log("Values inserted into", table);
-        res.send("Values Inserted into Swimming Table");
+        console.log("Values inserted into swimming table");
+        res.send("Values Inserted into Required Table");
       }
     }
   );
 });
 
 app.post("/user/home", (req, res) => {
-  const types = req.body.type;
-  const sets = req.body.sets;
-  const duration = req.body.duration;
-  const completed = req.body.completed;
-  const username = req.body.username;
+  console.log("Inside home workout post request");
+  console.log(req.body.workout);
+  const rec = req.body.workout;
+  const calories = rec.calories;
+  const types = rec.types;
+  const sets = rec.sets;
+  const duration = rec.duration;
+  const completed = rec.completed;
+  const username = rec.username;
   console.log(
-    `INSERT INTO homeworkout(types , sets , time , completed , username) VALUES (${types},${sets},${duration} , ${completed} , ${username})`
+    `INSERT INTO homeworkout(types , sets , calories , duration , completed , username) VALUES (${types},${sets},${duration} , ${completed} , ${username})`
   );
   db.query(
-    `INSERT INTO homeworkout (types , sets , time , completed , username) VALUES (?,?,?,?,?)`,
-    [types, sets, duration, completed, username],
+    "INSERT INTO homeworkout (types , sets , calories , duration , completed , username) VALUES (?,?,?,?,?,?)",
+    [types, sets, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        console.log("Values inserted into", table);
-        res.send("Values Inserted into Home Workout Table");
+        console.log("Values inserted into homeworkout table");
+        res.send("Values Inserted into Required Table");
       }
     }
   );
@@ -184,7 +189,7 @@ app.post("/user/home", (req, res) => {
 app.get("/user/getrun", (req, res) => {
   const { username } = req.query;
   console.log("Username recieved from getstorage: ", username);
-  const query = `SELECT distance, calories, time, completed FROM running WHERE username = "${username}";`;
+  const query = `SELECT distance, calories, duration, completed FROM running WHERE username = "${username}";`;
   db.query(query, (err, result) => {
     if (err) {
       console.log(err);
@@ -199,7 +204,7 @@ app.get("/user/getrun", (req, res) => {
 app.get("/user/getcycling", (req, res) => {
   const { username } = req.query;
   console.log("Username recieved from getstorage: ", username);
-  const query = `SELECT distance, calories, time, completed FROM cycling WHERE username = "${username}";`;
+  const query = `SELECT distance, calories, duration, completed FROM cycling WHERE username = "${username}";`;
   db.query(query, (err, result) => {
     if (err) {
       console.log(err);
@@ -213,7 +218,7 @@ app.get("/user/getcycling", (req, res) => {
 
 app.get("/user/getswim", (req, res) => {
   const { username } = req.query;
-  const query = `SELECT distance, calories, laps, time, completed FROM swimming WHERE username = "${username}";`;
+  const query = `SELECT distance, calories, laps, duration, completed FROM swimming WHERE username = "${username}";`;
   db.query(query, (err, result) => {
     if (err) {
       console.log(err);
@@ -227,7 +232,7 @@ app.get("/user/getswim", (req, res) => {
 
 app.get("/user/gethome", (req, res) => {
   const { username } = req.query;
-  const query = `SELECT types , sets , time , completed FROM homeworkout WHERE username = "${username}";`;
+  const query = `SELECT types , sets ,calories , duration , completed FROM homeworkout WHERE username = "${username}";`;
   db.query(query, (err, result) => {
     if (err) {
       console.log(err);
