@@ -151,6 +151,25 @@ class App {
         inputCadence.classList.remove("form__row--hidden");
       }
     });
+    containerWorkouts.addEventListener("change", (e) => {
+      const storedWorkouts = JSON.parse(localStorage.getItem("workouts")) || [];
+      console.log("Stored workouts: ", storedWorkouts);
+      const workoutEl = e.target.closest(".workout");
+      const workoutId = workoutEl.dataset.id;
+      const workout = storedWorkouts.find((work) => work.id === workoutId);
+
+      if (!workout) console.log("Workout not found in localStorage.");
+
+      if (workout) {
+        workout.completed = e.target.checked ? "YES" : "NO";
+      } else {
+        console.error("Workout not found for the given ID.");
+      }
+      console.log(`Workout ${workoutId}, ${workoutEl.dataset.type} completed status: ${workout.completed}`);
+
+      // Update localStorage with the modified workout
+      localStorage.setItem("workouts", JSON.stringify(storedWorkouts));
+    });
     console.log("CurrUser = ", CurrUser);
     this.getlocalStorage(CurrUser);
   }
@@ -308,7 +327,7 @@ class App {
               ? `data-types="${workout.types}" data-sets="${workout.sets}"`
               : `data-distance="${workout.distance}"`
           }>
-        <h2 class="workout__title">${workout.type.toUpperCase()}</h2>
+        <h2 class="workout__title">${getWorkoutTitle(workout.type)}</h2>
         ${
           workout.type === "homeworkout"
             ? `
@@ -403,6 +422,10 @@ class App {
     } else {
       alert("Error saving your workout. Please try again.");
     }
+    localStorage.setItem(
+      "workouts",
+      JSON.stringify(this.#workout.map(workout => ({ ...workout })))
+    );
   }
 
   async getlocalStorage(CurrUser) {
@@ -481,4 +504,18 @@ function getWorkoutColour(type) {
   }
 }
 
+function getWorkoutTitle(type) {
+  switch (type) {
+    case "running":
+      return "Running";
+    case "cycling":
+      return "Cycling";
+    case "swimming":
+      return "Swimming";
+    case "homeworkout":
+      return "Home Workout";
+    default:
+      return "Unknown Workout"; // Default title for unknown workout types
+  }
+}
 const app = new App();
