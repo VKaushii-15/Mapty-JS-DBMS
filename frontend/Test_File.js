@@ -20,7 +20,7 @@ let map, mapEvent;
 
 class Workout {
   date = new Date();
-  id = (Date.now() + "").slice(-10);
+  id = ((Date.now() + "").slice(-10) + CurrUser).slice(0, 10);
   constructor(coords, distance, duration) {
     this.coords = coords;
     this.distance = distance;
@@ -151,27 +151,36 @@ class App {
         inputCadence.classList.remove("form__row--hidden");
       }
     });
-    containerWorkouts.addEventListener("change", (e) => {
-      const storedWorkouts = JSON.parse(localStorage.getItem("workouts")) || [];
-      console.log("Stored workouts: ", storedWorkouts);
-      const workoutEl = e.target.closest(".workout");
-      const workoutId = workoutEl.dataset.id;
-      const workout = storedWorkouts.find((work) => work.id === workoutId);
-
-      if (!workout) console.log("Workout not found in localStorage.");
-
-      if (workout) {
-        workout.completed = e.target.checked ? "YES" : "NO";
-      } else {
-        console.error("Workout not found for the given ID.");
-      }
-      console.log(`Workout ${workoutId}, ${workoutEl.dataset.type} completed status: ${workout.completed}`);
-
-      // Update localStorage with the modified workout
-      localStorage.setItem("workouts", JSON.stringify(storedWorkouts));
-    });
     console.log("CurrUser = ", CurrUser);
     this.getlocalStorage(CurrUser);
+    containerWorkouts.addEventListener("click", (e) => {
+      const workoutEl = e.target.closest(".workout");
+      if (!workoutEl) return;
+      console.log("Checkbox clicked for Workout ID:", workoutEl.dataset.id);
+      console.log("SQLData type" , typeof SQLData);
+      (async () => {
+        try {
+          const SQLData = await this.exportStorage(CurrUser);
+          console.log("SQLData:", SQLData);
+          const workout = SQLData.find(work => work.id === workoutEl.dataset.id);
+          if (!workout) {
+            console.log("Workout not found!");
+            return;
+          }else{
+            console.log("Workout Found : " , workout);
+            if (e.target.checked) {
+              workout.completed = "YES";
+            } else {
+              workout.completed = "NO";
+            }
+            updateCompletion(workout);
+          }
+        } catch (error) {
+          console.error("Error fetching SQLData:", error);
+        }
+      })();
+    });
+   
   }
   getPosition() {
     if (navigator.geolocation)
@@ -319,7 +328,7 @@ class App {
     const icon = getWorkoutIcon(workout.type);
     let html = `
       <li class="workout workout--${workout.type}" 
-          data-id="${workout.id}"
+          data-id= ${workout.id}
           data-type="${workout.type}"
           data-duration="${workout.duration}"
           ${
@@ -472,7 +481,44 @@ class App {
       this.renderWorkout(workout);
     });
   }
-}
+
+  async exportStorage(CurrUser) {
+    const run = await axios.get(
+      `http://localhost:3000/user/getrun?username=${CurrUser}`
+    );
+    const runworkouts = run.data;
+    console.log(runworkouts);
+    runworkouts.forEach((workout) => {
+      workout.type = "running";
+    });
+    const cycling = await axios.get(
+      `http://localhost:3000/user/getcycling?username=${CurrUser}`
+    );
+    const cyclingworkouts = cycling.data;
+    console.log(cyclingworkouts);
+    cyclingworkouts.forEach((workout) => {
+      workout.type = "cycling";
+    });
+
+    const swim = await axios.get(
+      `http://localhost:3000/user/getswim?username=${CurrUser}`
+    );
+    const swimworkouts = swim.data;
+    console.log(swimworkouts);
+    swimworkouts.forEach((workout) => {
+      workout.type = "swimming";
+    });
+    const home = await axios.get(
+      `http://localhost:3000/user/gethome?username=${CurrUser}`
+    );
+    const homeworkouts = home.data;
+    console.log(homeworkouts);
+    homeworkouts.forEach((workout) => {
+      workout.type = "homeworkout";
+    });
+    const allworkouts = [...runworkouts,...cyclingworkouts,...swimworkouts,...homeworkouts];
+    return allworkouts;
+}}
 
 function getWorkoutIcon(type) {
   switch (type) {
@@ -518,4 +564,16 @@ function getWorkoutTitle(type) {
       return "Unknown Workout"; // Default title for unknown workout types
   }
 }
+
+async function updateCompletion(workout) {
+  try {
+    const response = await axios.post("http://localhost:3000/user/update", {
+      workout,
+    });
+    console.log("Completion status updated:", response.data);
+  } catch (error) {
+    console.error("Error updating completion status:", error);
+  }
+}
+// Initialize the app
 const app = new App();
