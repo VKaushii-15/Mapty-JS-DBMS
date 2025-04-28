@@ -149,7 +149,7 @@ app.post("/user/swim", (req, res) => {
     `INSERT INTO swimming(id , distance , calories , laps ,duration , completed , username) VALUES (${id},${distance},${calories},${laps},${duration} , ${completed} , ${username})`
   );
   db.query(
-    "INSERT INTO swimming (distance , calories , laps ,duration , completed , username) VALUES (?,?,?,?,?,?,?)",
+    "INSERT INTO swimming (id , distance , calories , laps ,duration , completed , username) VALUES (?,?,?,?,?,?,?)",
     [id , distance, calories, laps, duration, completed, username],
     (err, result) => {
       if (err) {
@@ -178,7 +178,7 @@ app.post("/user/home", (req, res) => {
   );
   db.query(
     "INSERT INTO homeworkout (id ,types , sets , calories , duration , completed , username) VALUES (?,?,?,?,?,?,?)",
-    [types, sets, calories, duration, completed, username],
+    [id , types, sets, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
