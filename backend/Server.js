@@ -1,5 +1,11 @@
 import mysql from "mysql2";
 import cors from "cors";
+
+app.use(
+  cors({
+    origin: "https://mapty-dbms.vercel.app",
+  }),
+);
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -9,7 +15,6 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
