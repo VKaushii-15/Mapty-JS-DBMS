@@ -1,23 +1,19 @@
 import mysql from "mysql2";
 import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import bodyParser from "body-parser";
+dotenv.config();
 
+const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: "https://mapty-dbms.vercel.app",
   }),
 );
-import dotenv from "dotenv";
-dotenv.config();
-
-import express from "express";
-import bodyParser from "body-parser";
-const app = express();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-});
 
 const db = mysql.createConnection({
   host: process.env.MYSQL_ADDON_HOST,
