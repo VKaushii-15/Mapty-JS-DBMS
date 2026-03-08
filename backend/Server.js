@@ -14,14 +14,13 @@ app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
 
-console.log(process.env.HOST);
-console.log(process.env.USER);
-console.log(process.env.PASSWORD);
+const mysql = require("mysql2");
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root15",
-  database: "maptyDBMS",
+  host: process.env.MYSQL_ADDON_HOST,
+  user: process.env.MYSQL_ADDON_USER,
+  password: process.env.MYSQL_ADDON_PASSWORD,
+  database: process.env.MYSQL_ADDON_DB,
+  port: process.env.MYSQL_ADDON_PORT,
 });
 
 db.connect((err) => {
@@ -37,7 +36,7 @@ app.post("/user/login", (req, res) => {
   console.log("Username: ", username);
   console.log("Password: ", password);
   console.log(
-    `SELECT * FROM login WHERE username = '${username}' AND password = '${password}' `
+    `SELECT * FROM login WHERE username = '${username}' AND password = '${password}' `,
   );
   db.query(
     `SELECT * FROM login WHERE username = ? AND password = ? `,
@@ -52,7 +51,7 @@ app.post("/user/login", (req, res) => {
         console.log("User found in the database", result);
         res.send("UserFound");
       }
-    }
+    },
   );
 });
 
@@ -67,10 +66,10 @@ app.post("/user/register", (req, res) => {
       } else {
         console.log("Values inserted into login table");
       }
-    }
+    },
   );
   console.log(
-    `INSERT INTO profile (height , weight , age , gender , bmi , username) values (${height},${weight},${age},${gender},${bmi},${username})`
+    `INSERT INTO profile (height , weight , age , gender , bmi , username) values (${height},${weight},${age},${gender},${bmi},${username})`,
   );
   db.query(
     "INSERT INTO profile (height , weight , age , gender , bmi , username) values (?,?,?,?,?,?) ",
@@ -82,7 +81,7 @@ app.post("/user/register", (req, res) => {
         console.log("Values inserted into profile table");
         res.send("Values Inserted into Login & Profile Table");
       }
-    }
+    },
   );
 });
 
@@ -95,11 +94,11 @@ app.post("/user/run", (req, res) => {
   const distance = rec.distance;
   const duration = rec.duration;
   console.log(
-    `INSERT INTO running (id , distance , calories , duration , completed , username) VALUES (${id} , ${distance},${calories},${duration} , ${completed} , ${username})`
+    `INSERT INTO running (id , distance , calories , duration , completed , username) VALUES (${id} , ${distance},${calories},${duration} , ${completed} , ${username})`,
   );
   db.query(
     "INSERT INTO running (id,distance , calories , duration , completed , username) VALUES (?,?,?,?,?,?)",
-    [id,distance, calories, duration, completed, username],
+    [id, distance, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -107,7 +106,7 @@ app.post("/user/run", (req, res) => {
         console.log("Values inserted into running table");
         res.send("Values Inserted into Required Table");
       }
-    }
+    },
   );
 });
 
@@ -120,11 +119,11 @@ app.post("/user/cycling", (req, res) => {
   const distance = rec.distance;
   const duration = rec.duration;
   console.log(
-    `INSERT INTO cycling (id , distance , calories , duration , completed , username) VALUES (${id},${distance},${calories},${duration} , ${completed} , ${username})`
+    `INSERT INTO cycling (id , distance , calories , duration , completed , username) VALUES (${id},${distance},${calories},${duration} , ${completed} , ${username})`,
   );
   db.query(
     "INSERT INTO cycling (id , distance , calories , duration , completed , username) VALUES (?,?,?,?,?,?)",
-    [id , distance, calories, duration, completed, username],
+    [id, distance, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -132,7 +131,7 @@ app.post("/user/cycling", (req, res) => {
         console.log("Values inserted into cycling table");
         res.send("Values Inserted into Required Table");
       }
-    }
+    },
   );
 });
 
@@ -146,11 +145,11 @@ app.post("/user/swim", (req, res) => {
   const distance = rec.distance;
   const duration = rec.duration;
   console.log(
-    `INSERT INTO swimming(id , distance , calories , laps ,duration , completed , username) VALUES (${id},${distance},${calories},${laps},${duration} , ${completed} , ${username})`
+    `INSERT INTO swimming(id , distance , calories , laps ,duration , completed , username) VALUES (${id},${distance},${calories},${laps},${duration} , ${completed} , ${username})`,
   );
   db.query(
     "INSERT INTO swimming (id , distance , calories , laps ,duration , completed , username) VALUES (?,?,?,?,?,?,?)",
-    [id , distance, calories, laps, duration, completed, username],
+    [id, distance, calories, laps, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -158,7 +157,7 @@ app.post("/user/swim", (req, res) => {
         console.log("Values inserted into swimming table");
         res.send("Values Inserted into Required Table");
       }
-    }
+    },
   );
 });
 
@@ -174,11 +173,11 @@ app.post("/user/home", (req, res) => {
   const completed = rec.completed;
   const username = rec.username;
   console.log(
-    `INSERT INTO homeworkout(id , types , sets , calories , duration , completed , username) VALUES (${id},${types},${sets},${duration} , ${completed} , ${username})`
+    `INSERT INTO homeworkout(id , types , sets , calories , duration , completed , username) VALUES (${id},${types},${sets},${duration} , ${completed} , ${username})`,
   );
   db.query(
     "INSERT INTO homeworkout (id ,types , sets , calories , duration , completed , username) VALUES (?,?,?,?,?,?,?)",
-    [id , types, sets, calories, duration, completed, username],
+    [id, types, sets, calories, duration, completed, username],
     (err, result) => {
       if (err) {
         console.log(err);
@@ -186,7 +185,7 @@ app.post("/user/home", (req, res) => {
         console.log("Values inserted into homeworkout table");
         res.send("Values Inserted into Required Table");
       }
-    }
+    },
   );
 });
 
