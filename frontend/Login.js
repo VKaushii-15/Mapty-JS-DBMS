@@ -7,10 +7,13 @@ async function insertIntoLogin(user, pass) {
   sessionStorage.setItem("username", user);
   sessionStorage.setItem("password", pass);
 
-  const data = await axios.post("http://localhost:3000/user/login", {
-    username: user,
-    password: pass,
-  });
+  const data = await axios.post(
+    "https://mapty-js-dbms.onrender.com/user/login",
+    {
+      username: user,
+      password: pass,
+    },
+  );
   console.log(data.data);
   if (data.data === "UserFound") {
     alert("User Found");

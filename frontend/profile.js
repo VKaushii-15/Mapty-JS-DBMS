@@ -13,8 +13,8 @@ async function ProfileInsert() {
   };
   console.log(profileData);
   const response = await axios.post(
-    "http://localhost:3000/user/register",
-    profileData
+    "https://mapty-js-dbms.onrender.com/user/register",
+    profileData,
   );
   console.log(response.data);
   if (response.data === "Values Inserted into Login & Profile Table") {
