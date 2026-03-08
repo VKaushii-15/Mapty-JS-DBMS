@@ -14,7 +14,6 @@ app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
 
-const mysql = require("mysql2");
 const db = mysql.createConnection({
   host: process.env.MYSQL_ADDON_HOST,
   user: process.env.MYSQL_ADDON_USER,
